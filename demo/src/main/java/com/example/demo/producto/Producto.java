@@ -24,8 +24,8 @@ productoRepo repo;
   }
 
 @PostMapping("producto")
-  public Producto addProducto(@RequestBody Producto producto) {
-    return this.repo.save(producto);
+  public product addProducto(@RequestBody product producto) {
+    return repo.save(producto);
   }
 }
 
