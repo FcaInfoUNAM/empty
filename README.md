@@ -1,22 +1,32 @@
-# Spring Boot JPA GET PUT POST
+# Spring Boot JPA: GET, PUT y POST
 
-## Paso 1: 
-Creara una base de datos en Postgres ejecutando el la terminal
+## Paso 1: crea la base de datos en PostgreSQL
+Ejecuta este comando desde la terminal:
+
 ```bash
 psql -U postgres
 ```
 
+Luego crea el usuario y la base de datos:
 
 ```sql
-CREATE USER chochos WITH PASSWORD ‘chochos’;
+CREATE USER chochos WITH PASSWORD 'chochos';
 CREATE DATABASE chochos OWNER chochos;
 ```
 
-## Paso2 Actualiza el modelo
-Generar el modelo ```demo/src/main/java/com/example/demo/model/product.java```
+> Nota: en un ejemplo o documentación, usa credenciales de prueba o placeholders para evitar compartir información sensible.
+
+## Paso 2: actualiza el modelo
+Crea o modifica el modelo `Producto` en:
+
+```text
+demo/src/main/java/com/example/demo/model/Producto.java
+```
+
 ```java
 package com.example.demo.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
@@ -31,102 +41,126 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Table(name="producto")
+@Table(name = "producto")
 @Entity
-public class product {
+public class Producto {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String nombre;
-  
     private String descripcion;
     private String lote;
-    private float precioUnitario;
+    private BigDecimal precioUnitario;
     private LocalDate fechaCaducidad;
-
 }
-
 ```
 
-> Nota que eliminamos los geters y seters pero agregamos dos etiquetas: @NoArgsConstructor y @AllArgsConstructor
-> Revisa la etiqueta de @GeneratedValue y analiza que significa lo que esá entre paréntesis
+> Nota: eliminamos los getters y setters, pero agregamos dos anotaciones: `@NoArgsConstructor` y `@AllArgsConstructor`.
+>
+> Revisa la anotación `@GeneratedValue` y analiza qué significa lo que está dentro de los paréntesis.
 
-## Paso 3 
-agrega o edita el siguiente método al controlador ```demo/src/main/java/com/example/demo/producto/Producto.java```
+## Paso 3: agrega o edita el método en el controlador
+Modifica o agrega este método en el controlador:
+
+```text
+demo/src/main/java/com/example/demo/producto/ProductoController.java
+```
+
+El controlador usa el repositorio `ProductoRepo`, ubicado en:
+
+```text
+demo/src/main/java/com/example/demo/repo/ProductoRepo.java
+```
 
 ```java
-@GetMapping("producto/{id}")
-public Optional<product> getById(@PathVariable Long id) {
+@GetMapping("/producto/{id}")
+public Optional<Producto> getById(@PathVariable Long id) {
     return repo.findById(id);
 }
 ```
 
-## Paso 4
-Inserta un nuevo registro en una terminal diferente
-```cmd
+## Paso 4: inserta un nuevo registro en otra terminal
+Ejecuta este comando en una terminal distinta:
+
+```bash
 curl -s -X POST localhost:8080/producto \
   -H "Content-Type: application/json" \
-  -d '{"nombre":"Creatina", "descripcion":"Creatina de 500g holixlab", "lote":"12345", "precioUnitario":500.5, "fechaCaducidad":"2026-05-04"}'
+  -d '{"nombre":"Creatina","descripcion":"Creatina de 500 g HoliXlab","lote":"12345","precioUnitario":500.5,"fechaCaducidad":"2026-05-04"}'
 ```
 
-## Paso 5
+## Paso 5: consulta el registro
+Puedes consultar el registro usando el navegador:
 
-Consulta el registro mediante el api utilizando el navegador ```<url de la aplicacion>/producto/<idDelProducto>```
-```cmd
+```text
+<url_de_la_aplicacion>/producto/<id_del_producto>
+```
+
+O desde la terminal:
+
+```bash
 curl -s -X GET localhost:8080/producto/1
 ```
-## Paso 6
-Agrega o edita el siguiente método al controlador ```demo/src/main/java/com/example/demo/producto/Producto.java```
+
+## Paso 6: agrega o edita el siguiente método
+En el mismo controlador, agrega esta operación:
 
 ```java
-@PutMapping("producto/{id}")
-public product putProduct(@PathVariable Long id, @RequestBody product product) {
-    product.setId(id);
-    return repo.save(product);
+@PutMapping("/producto/{id}")
+public Producto putProduct(@PathVariable Long id, @RequestBody Producto producto) {
+    producto.setId(id);
+    return repo.save(producto);
 }
 ```
-## Paso 7
-Edita el un nuevo registro en una terminal diferente
-```cmd
+
+## Paso 7: actualiza un registro desde otra terminal
+Ejecuta este comando:
+
+```bash
 curl -s -X PUT localhost:8080/producto/1 \
   -H "Content-Type: application/json" \
-  -d '{"nombre":"Proteina de Fresa", "descripcion":"Proteina de suero de leche 25g p/s, 2.2 kg ", "lote":"12345", "precioUnitario":500.5, "fechaCaducidad":"2027-06-07"}'
+  -d '{"nombre":"Proteína de fresa","descripcion":"Proteína de suero de leche 25 g, 2.2 kg","lote":"12345","precioUnitario":500.5,"fechaCaducidad":"2027-06-07"}'
 ```
- repite el paso 5 para ver que los cambios se hayan relizado de forma correcta.
 
-## Paso 8
-Agrega o edita el siguiente método al controlador ```demo/src/main/java/com/example/demo/producto/Producto.java```
+Repite el paso 5 para verificar que los cambios se hayan realizado correctamente.
+
+## Paso 8: agrega o edita el siguiente método
+En el controlador:
 
 ```java
-@DeleteMapping("producto/{id}")
-public String deleteMailbox(@PathVariable("id") Long id) {
+@DeleteMapping("/producto/{id}")
+public String deleteProduct(@PathVariable("id") Long id) {
     repo.deleteById(id);
     return "{\"success\":true}";
 }
 ```
-## Paso 9
 
-Consulta el registro mediante el api utilizando el navegador ```<url de la aplicacion>/producto/<idDelProducto>```
-```cmd
+## Paso 9: valida la eliminación
+Consulta el registro con la API o usa la terminal:
+
+```bash
 curl -s -X DELETE localhost:8080/producto/1
 ```
-y consulta la lista de productops para validar
 
+Luego revisa la lista de productos para confirmar que el registro se haya eliminado correctamente.
 
-> * Si se te muere la ventana del codespace con spring iniciado pues matar el proceso con los siguientes comandos
-
->Bucar PID:
->```cmd
->fuser 8080/tcp
->```
->Matar proceso con el PID que regresa el comando anterior:
->```cmd
->kill <PID>
->```
-> * Si requieres iniciar postgres porque se inicio tu contenedor otra vez usa los siguientes comandos
->```cmd
->sdo su
->service postgresql start
->```
-
+> Si se cierra la ventana del codespace mientras Spring está ejecutándose, puedes terminar el proceso con estos comandos:
+>
+> Buscar PID:
+>
+> ```bash
+> fuser 8080/tcp
+> ```
+>
+> Matar el proceso con el PID devuelto por el comando anterior:
+>
+> ```bash
+> kill <PID>
+> ```
+>
+> Si necesitas iniciar PostgreSQL porque el contenedor se reinició, usa estos comandos:
+>
+> ```bash
+> sudo su
+> service postgresql start
+> ```
